@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finance Tracker Tests</title>
+    <style>
+      body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; font: 1rem/1.5 system-ui, sans-serif; }
+      .pass { color: #137b59; }
+      .fail { color: #bd3d4c; }
+    </style>
+  </head>
+  <body>
+    <h1>Finance Tracker Tests</h1>
+    <p id="summary" aria-live="polite">Running tests…</p>
+    <ol id="results"></ol>
+    <script type="module">
+      import { compileRegex, validateTransaction, highlight } from './scripts/validators.js';
+      import { filterTransactions, sortTransactions } from './scripts/search.js';
+
+      const results = [];
+      function assert(condition, label) {
+        results.push({ passed: Boolean(condition), label });
+      }
+
+      const valid = {
+        description: 'Weekly groceries',
+        amount: 34.25,
+        category: 'Food & Drink',
+        date: '2026-10-13',
+        type: 'expense'
+      };
+      assert(validateTransaction(valid).isValid, 'Accepts a valid transaction.');
+      assert(!validateTransaction({ ...valid, amount: -1 }).isValid, 'Rejects negative amounts.');
+      assert(!validateTransaction({ ...valid, amount: 1.234 }).isValid, 'Rejects amounts with more than two decimal places.');
+      assert(!validateTransaction({ ...valid, description: 'x' }).isValid, 'Rejects too-short descriptions.');
+      assert(!validateTransaction({ ...valid, category: '<script>' }).isValid, 'Rejects unsafe category text.');
+      assert(!validateTransaction({ ...valid, date: '2026-02-30' }).isValid, 'Rejects impossible calendar dates.');
+      assert(!validateTransaction({ ...valid, type: 'bonus' }).isValid, 'Rejects unknown transaction types.');
+      assert(compileRegex('food', 'i').test('FOOD shop'), 'Compiles valid case-insensitive regex.');
+      assert(compileRegex('[') === null, 'Returns null for malformed regex.');
+      assert(highlight('<img src=x>', null) === '&lt;img src=x&gt;', 'Escapes HTML in displayed text.');
+
+      const rows = [
+        { id: 'one', description: 'Bus pass', amount: 15, category: 'Transport', type: 'expense', date: '2026-10-03' },
+        { id: 'two', description: 'Rent', amount: 400, category: 'Housing', type: 'expense', date: '2026-10-11' },
+        { id: 'three', description: 'Paycheck', amount: 1000, category: 'Income', type: 'income', date: '2026-10-01' }
+      ];
+      assert(filterTransactions(rows, 'bus').length === 1, 'Filters transaction records with regex.');
+      assert(filterTransactions(rows, '[').length === rows.length, 'Does not crash on malformed search regex.');
+      assert(sortTransactions(rows, 'amount', 'desc')[0].id === 'three', 'Sorts numeric amounts descending.');
+      assert(sortTransactions(rows, 'date', 'asc')[0].id === 'three', 'Sorts ISO dates ascending.');
+
+      const list = document.querySelector('#results');
+      results.forEach(({ passed, label }) => {
+        const item = document.createElement('li');
+        item.className = passed ? 'pass' : 'fail';
+        item.textContent = `${passed ? 'PASS' : 'FAIL'}: ${label}`;
+        list.append(item);
+      });
+      const passed = results.filter((result) => result.passed).length;
+      document.querySelector('#summary').textContent = `${passed}/${results.length} checks passed.`;
+      document.title = `${passed === results.length ? 'PASS' : 'FAIL'} — Finance Tracker Tests`;
+    </script>
+  </body>
+</html>

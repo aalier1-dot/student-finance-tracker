@@ -1,0 +1,16 @@
+[
+  {"id":"txn_01","description":"Lunch at cafeteria","amount":12.5,"category":"Food","date":"2026-09-12","type":"expense","createdAt":"2026-09-12T12:40:00Z","updatedAt":"2026-09-12T12:40:00Z"},
+  {"id":"txn_02","description":"Chemistry textbook","amount":89.99,"category":"Books","date":"2026-09-08","type":"expense","createdAt":"2026-09-08T09:00:00Z","updatedAt":"2026-09-08T09:00:00Z"},
+  {"id":"txn_03","description":"Monthly bus pass","amount":45,"category":"Transport","date":"2026-09-20","type":"expense","createdAt":"2026-09-20T07:30:00Z","updatedAt":"2026-09-20T07:30:00Z"},
+  {"id":"txn_04","description":"Coffee with friends","amount":8.75,"category":"Entertainment","date":"2026-09-28","type":"expense","createdAt":"2026-09-28T18:05:00Z","updatedAt":"2026-09-28T18:05:00Z"},
+  {"id":"txn_05","description":"Part-time job payout","amount":430,"category":"Income","date":"2026-09-01","type":"income","createdAt":"2026-09-01T15:00:00Z","updatedAt":"2026-09-01T15:00:00Z"},
+  {"id":"txn_06","description":"Weekly grocery restock","amount":64.2,"category":"Food","date":"2026-09-18","type":"expense","createdAt":"2026-09-18T17:00:00Z","updatedAt":"2026-09-18T17:00:00Z"},
+  {"id":"txn_07","description":"Study group software","amount":15,"category":"Technology","date":"2026-10-03","type":"expense","createdAt":"2026-10-03T11:45:00Z","updatedAt":"2026-10-03T11:45:00Z"},
+  {"id":"txn_08","description":"Scholarship stipend","amount":1200,"category":"Income","date":"2026-10-15","type":"income","createdAt":"2026-10-15T08:00:00Z","updatedAt":"2026-10-15T08:00:00Z"},
+  {"id":"txn_09","description":"Late-night train home","amount":14.5,"category":"Transport","date":"2026-10-24","type":"expense","createdAt":"2026-10-24T23:10:00Z","updatedAt":"2026-10-24T23:10:00Z"},
+  {"id":"txn_10","description":"Cinema & snacks","amount":19.99,"category":"Entertainment","date":"2026-10-29","type":"expense","createdAt":"2026-10-29T20:00:00Z","updatedAt":"2026-10-29T20:00:00Z"},
+  {"id":"txn_11","description":"Tiny printing fee","amount":0.01,"category":"Study Supplies","date":"2026-10-31","type":"expense","createdAt":"2026-10-31T10:00:00Z","updatedAt":"2026-10-31T10:00:00Z"},
+  {"id":"txn_12","description":"Laptop repair refund","amount":2500,"category":"Income","date":"2026-11-01","type":"income","createdAt":"2026-11-01T12:00:00Z","updatedAt":"2026-11-01T12:00:00Z"},
+  {"id":"txn_13","description":"Café supplies & tea","amount":22.4,"category":"Food & Drink","date":"2026-10-11","type":"expense","createdAt":"2026-10-11T16:00:00Z","updatedAt":"2026-10-11T16:00:00Z"},
+  {"id":"txn_14","description":"Lab notebook — semester","amount":6.5,"category":"Books","date":"2026-10-13","type":"expense","createdAt":"2026-10-13T14:00:00Z","updatedAt":"2026-10-13T14:00:00Z"}
+]

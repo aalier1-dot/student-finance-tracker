@@ -1,0 +1,194 @@
+:root {
+  color-scheme: light;
+  --bg: #f3f6fb;
+  --surface: #fff;
+  --surface-muted: #f4f7fc;
+  --text: #192536;
+  --muted: #5f6f82;
+  --border: #dce4ef;
+  --primary: #2856c7;
+  --primary-dark: #1e429a;
+  --green: #137b59;
+  --red: #bd3d4c;
+  --shadow: 0 12px 30px rgb(31 48 76 / 8%);
+}
+
+* { box-sizing: border-box; }
+html { font-family: system-ui, "Segoe UI", sans-serif; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eaf1ff, var(--bg) 20rem);
+  color: var(--text);
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+
+.skip-link {
+  position: absolute;
+  z-index: 2;
+  top: .75rem;
+  left: -100vw;
+  padding: .75rem 1rem;
+  border-radius: .5rem;
+  background: var(--text);
+  color: #fff;
+}
+.skip-link:focus { left: .75rem; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem max(1rem, calc((100vw - 1160px) / 2));
+  border-bottom: 1px solid var(--border);
+  background: rgb(255 255 255 / 86%);
+}
+.eyebrow {
+  margin: 0 0 .2rem;
+  color: var(--muted);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.25rem); }
+h2 { margin: 0; font-size: 1.15rem; }
+.topbar-actions, .button-row { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+.layout {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+.panel {
+  grid-column: span 12;
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.panel:nth-child(2), .panel:nth-child(3), .panel:nth-child(4) { grid-column: span 6; }
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
+.stat-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: .45rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: .75rem;
+  background: var(--surface-muted);
+}
+.stat-card.positive { background: #edfaf5; }
+.stat-card.negative { background: #fff3f3; }
+.stat-label { color: var(--muted); font-size: .76rem; font-weight: 700; text-transform: uppercase; }
+.stat-value { overflow-wrap: anywhere; font-size: clamp(1.1rem, 2vw, 1.55rem); }
+
+.goal-box, .form-grid, .settings-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .9rem;
+  align-items: end;
+}
+.goal-box { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.field { display: flex; min-width: 0; flex-direction: column; gap: .35rem; }
+label { font-size: .9rem; font-weight: 650; }
+input, select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .65rem .75rem;
+  border: 1px solid #bac7d8;
+  border-radius: .6rem;
+  background: #fff;
+  color: var(--text);
+}
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 3px solid #87a9ff;
+  outline-offset: 2px;
+}
+.primary-button, .secondary-button, .delete-button {
+  min-height: 2.65rem;
+  padding: .65rem .9rem;
+  border: 0;
+  border-radius: .6rem;
+  font-weight: 650;
+}
+.primary-button { background: var(--primary); color: #fff; }
+.primary-button:hover { background: var(--primary-dark); }
+.secondary-button { border: 1px solid var(--border); background: #f2f5fa; color: var(--text); }
+.delete-button { min-height: 2.2rem; padding: .4rem .65rem; background: #fff0f1; color: var(--red); }
+.button-row { margin-top: 1rem; }
+.error-message { min-height: 1rem; color: var(--red); font-size: .8rem; }
+.invalid-field { border-color: var(--red); }
+.pill {
+  display: inline-flex;
+  padding: .35rem .7rem;
+  border-radius: 99rem;
+  background: #e6f6ef;
+  color: var(--green);
+  font-size: .8rem;
+  font-weight: 700;
+}
+.pill.warning { background: #fff1d8; color: #8a5800; }
+.micro-copy { margin-top: .75rem; color: var(--muted); font-size: .9rem; }
+.settings-form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.controls-row { flex-wrap: wrap; }
+.search-wrap { flex: 1 1 15rem; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .75rem; border-bottom: 1px solid var(--border); text-align: left; }
+th { background: var(--surface-muted); white-space: nowrap; }
+.sort-button { padding: 0; border: 0; background: transparent; color: inherit; font-weight: 700; }
+.amount.income { color: var(--green); font-weight: 700; }
+.amount.expense { color: var(--red); font-weight: 700; }
+.empty-state { padding: 1.5rem; color: var(--muted); text-align: center; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+mark { border-radius: .2rem; background: #ffe28a; color: inherit; }
+
+@media (max-width: 760px) {
+  .topbar { align-items: flex-start; flex-direction: column; padding: 1rem; }
+  .panel:nth-child(2), .panel:nth-child(3), .panel:nth-child(4) { grid-column: span 12; }
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .layout { padding: .75rem .6rem 2rem; }
+  .panel { padding: 1rem; }
+  .form-grid, .goal-box, .settings-form { grid-template-columns: 1fr; }
+  .table-wrap { overflow: visible; }
+  table, tbody, tr, td { display: block; width: 100%; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+  tbody tr { padding: .5rem 0; border-bottom: 1px solid var(--border); }
+  td { display: flex; justify-content: space-between; gap: .75rem; padding: .4rem 0; border: 0; }
+  td::before { content: attr(data-label); color: var(--muted); font-weight: 700; }
+  td.empty-state { display: block; }
+  td.empty-state::before { content: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

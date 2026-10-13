@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Student Finance Tracker dashboard for managing budgets, income, expenses, and spending targets."
+    />
+    <title>Student Finance Tracker</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <div class="skip-link-wrap">
+      <a class="skip-link" href="#main-content">Skip to content</a>
+    </div>
+
+    <header class="topbar" aria-label="Main header">
+      <div>
+        <p class="eyebrow">Student Planner</p>
+        <h1>Finance Tracker</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="export-data" class="secondary-button" type="button">Export JSON</button>
+        <button id="import-button" class="secondary-button" type="button">Import JSON</button>
+        <input id="import-input" type="file" accept="application/json" hidden />
+      </div>
+    </header>
+
+    <main id="main-content" class="layout">
+      <section class="panel" aria-labelledby="summary-heading">
+        <div class="panel-header">
+          <h2 id="summary-heading">Summary</h2>
+        </div>
+        <div class="stats-grid" id="stats-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="goal-heading">
+        <div class="panel-header goal-header">
+          <h2 id="goal-heading">Spending goals</h2>
+          <span class="pill" id="goal-status">On track</span>
+        </div>
+        <div class="goal-box">
+          <div>
+            <label for="monthly-cap">Monthly cap</label>
+            <input id="monthly-cap" name="monthly-cap" type="number" min="0" step="0.01" placeholder="1200" />
+          </div>
+          <div>
+            <label for="category-cap">Category cap</label>
+            <input id="category-cap" name="category-cap" type="number" min="0" step="0.01" placeholder="300" />
+          </div>
+          <button id="apply-goal" class="primary-button" type="button">Apply goals</button>
+        </div>
+        <div id="goal-summary" class="micro-copy" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="form-title">
+        <div class="panel-header">
+          <h2 id="form-title">Add transaction</h2>
+        </div>
+        <form id="transaction-form" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="description">Description</label>
+              <input id="description" name="description" type="text" maxlength="80" required />
+              <small class="error-message" id="description-error" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="amount">Amount</label>
+              <input id="amount" name="amount" type="number" min="0.01" step="0.01" required />
+              <small class="error-message" id="amount-error" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="category">Category</label>
+              <input id="category" name="category" type="text" maxlength="30" required />
+              <small class="error-message" id="category-error" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="date">Date</label>
+              <input id="date" name="date" type="date" required />
+              <small class="error-message" id="date-error" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="type">Type</label>
+              <select id="type" name="type" required>
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+              <small class="error-message" id="type-error" aria-live="polite"></small>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="primary-button" type="submit">Save transaction</button>
+            <button class="secondary-button" type="reset">Clear</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="settings-heading">
+        <div class="panel-header">
+          <h2 id="settings-heading">Preferences</h2>
+        </div>
+        <form id="settings-form" class="settings-form">
+          <div class="field">
+            <label for="currency-select">Currency</label>
+            <select id="currency-select" name="currency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="ZAR">ZAR (R)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="unit-select">Unit</label>
+            <select id="unit-select" name="unit">
+              <option value="per-month">Per month</option>
+              <option value="per-week">Per week</option>
+              <option value="per-term">Per term</option>
+            </select>
+          </div>
+          <button type="submit" class="primary-button">Update settings</button>
+        </form>
+      </section>
+
+      <section class="panel table-panel" aria-labelledby="transactions-heading">
+        <div class="panel-header controls-row">
+          <h2 id="transactions-heading">Transactions</h2>
+          <div class="search-wrap">
+            <label class="sr-only" for="search-input">Search transactions</label>
+            <input id="search-input" type="search" placeholder="Search description, category, type..." aria-label="Search transactions" />
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th><button class="sort-button" data-sort="description" type="button">Description</button></th>
+                <th><button class="sort-button" data-sort="category" type="button">Category</button></th>
+                <th><button class="sort-button" data-sort="amount" type="button">Amount</button></th>
+                <th><button class="sort-button" data-sort="type" type="button">Type</button></th>
+                <th><button class="sort-button" data-sort="date" type="button">Date</button></th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="transaction-table-body" aria-live="polite"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div id="live-region" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+    <script type="module" src="scripts/app.js"></script>
+  </body>
+</html>
