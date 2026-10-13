@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Student Finance Tracker
 
 Theme: Modern student budgeting dashboard with calm blue and green accents.
@@ -76,3 +77,7 @@ Each transaction stores:
 - `type`: `income` or `expense`
 - `createdAt`: record creation time
 - `updatedAt`: last modification time
+=======
+# student-finance-tracker
+“Student finance tracker built with vanilla HTML, CSS, and JS”.
+>>>>>>> b4a8ecc6720222254f93c812f5801bfc435516f8
