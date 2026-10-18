@@ -1,127 +1,111 @@
-# Student Finance Tracker
+## Student Finance Tracker
+- An accessibility, reponsive, vanilla HTML/CSS/JS web help us students record expenses, monitor budgets, and make informed financial decisions all in the browser with no backkend required.  
 
-An accessible, responsive student finance tracker built with vanilla HTML, CSS, and JavaScript. It helps students record income and expenses, review summaries, and set spending caps. Data is stored in the browser; there is no backend.
+## Theme: Student Finance Tracker
+ 
+ #Repository: [aalier1-dot/student-finance-tracker](https://github.com/aalier1-dot/student-finance-tracker) 
 
-- **Theme:**student Finanace Tracker
-- **Repository:** [aalier1-dot/student-finance-tracker](https://github.com/aalier1-dot/student-finance-tracker)
-- **GitHub Pages:** [Open the live app](https://aalier1-dot.github.io/student-finance-tracker/)
-- **M1 specification:** [Wireframe, data model, and accessibility plan](assets/spec.md)
+ #GitHub: [Open the live app](https://aalier1-dot.github.io/student-finance-tracker/)
+
+ #M1 specification: [Wireframe, data model, and accessibility plan](assets/spec.md) 
 
 ## Features
 
-- Add and delete income or expense records.
-- Validate descriptions, amounts, categories, dates, and transaction types with inline error messages.
-- View balance, income, expenses, and average transaction amount.
-- Set a monthly spending cap and a category cap; see an on-track, near-limit, or over-budget status.
-- Search descriptions and other transaction details with case-insensitive regular-expression search; matching descriptions, categories, types, and dates are highlighted.
-- Sort transactions by description, category, amount, type, or date.
-- Import and export transaction data as JSON. Imports are validated before replacing saved data.
-- Save transactions and preferences in `localStorage`.
-- Choose USD, EUR, GBP, or ZAR and select a reporting unit.
-- Start with 14 diverse example records from `seed.json` when browser storage is empty.
+- Add, edit, and delete transactions with confirmation dialog
+- Categories: Food, Books, Transport, Entertainment, Fees, Other (fully editable)
+- Dashboard with total spent, transaction count, top category, average amount, and 7-day bar chart
+- Monthly budget cap with live ARIA status (polite when under, assertive when exceeded)
+- Live regex search with match highlighting using `<mark>`and case-insensitive toggle
+- Sort records by date, description (A↕Z), or amount (↑↓)
+- Responsive table on desktop, card list on mobile
+- Import / Export JSON with structure validation
+- Currency settings: base RWF with manual USD and EUR conversion rates + quick converter
+- All data persisted to localStorage — works fully offline
+- Accessible: skip link, visible focus, ARIA live regions, keyboard-only navigation
 
 ## Regex catalog
 
-Search input is compiled using `new RegExp(input, 'i')`. Valid patterns filter records; malformed patterns do not crash the app and leave records unfiltered. Matching is highlighted using `<mark>` after escaping displayed text.
-
-| Rule | Pattern or check | Example | Result |
-| --- | --- | --- | --- |
-| Category format | `/^[A-Za-z][A-Za-z0-9&/.' -]{1,29}$/` | `Food & Drink` | Accepted |
-| Date format | `/^\d{4}-\d{2}-\d{2}$/`, followed by a real-calendar-date check | `2026-10-13` | Accepted |
-| Amount | Finite number greater than zero, with at most two decimal places | `12.50` | Accepted |
-| Transaction type | `income` or `expense` | `expense` | Accepted |
-| Case-insensitive search | `food` | `Food & Drink` | Matches |
-| Advanced search example | `\b(bus|coffee)\b` | `Coffee with friends` | Matches |
-| Invalid search | `[` | Any record | Safely ignored; no crash |
-
-**Rubric note:** The current transaction validator does not yet implement the requested advanced lookahead or back-reference validation rules. The search catalog's advanced example is a search pattern, not a validation rule.
+| Rule | Pattern | Purpose | Example input | Result |
+|------|---------|---------|---------------|--------|
+| Description: no leading/trailing spaces | `/^\S(?:.*\S)?$/` | Rejects `" Lunch"` or `"Lunch "` | `" Lunch"` | ❌ fails |
+| Description: duplicate word (back-reference) | `/\b(\w+)\s+\1\b/i` | Catches `"the the book"` | `"the the"` | ❌ fails |
+| Amount: integer or ≤2 decimal places | `/^(0\|[1-9]\d*)(\.\d{1,2})?$/` | Rejects `01500` and `1.999` | `"1500.50"` | ✅ passes |
+| Date: YYYY-MM-DD | `/^\d{4}-(0[1-9]\|1[0-2])-(0[1-9]\|[12]\d\|3[01])$/` | Rejects `18/10/2026` and month 13 | `"2026-10-18"` | ✅ passes |
+| Category name: letters, spaces, hyphens | `/^[A-Za-z]+(?:[ -][A-Za-z]+)*$/` | Rejects `Food2` and `Food!` | `"Non-Academic"` | ✅ passes |
+| Budget / rate: positive, no all-zeros (lookahead) | `/^(?!0+$)\d+(\.\d{1,2})?$/` | Rejects `0` and `000` | `"100000"` | ✅ passes |
+| Search: cents present | `/\.\d{2}\b/` | Finds amounts with cents | `"2500.50"` | ✅ matches |
+| Search: beverage keyword | `/(coffee\|tea)/i` | Finds coffee/tea descriptions | `"Coffee with friends"` | ✅ matches |
 
 ## Keyboard map
 
-- `Tab` / `Shift+Tab`: move through links, buttons, and form controls.
-- `Enter`: submit forms or activate the focused button.
-- `Space`: activate a focused button.
-- Search: type a plain word or regular-expression pattern to filter records.
-- Sort buttons: activate with `Enter` or `Space` to change the sort order.
-
-There are no custom `Escape` shortcuts, keyboard traps, or `Alt+number` shortcuts in the current app.
-
+| Key / Combo | Action |
+|-------------|--------|
+| `Tab` | Move focus forward through interactive elements |
+| `Shift+Tab` | Move focus backward |
+| `Enter` / `Space` | Activate focused button or link |
+| `Escape` | Close the delete confirmation dialog |
+| `Alt+1`…`Alt+7` (nav links) | Jump to About, Dashboard, Add, Search, Records, Budget, Settings via nav |
+| Arrow keys (inside `<select>`) | Change sort field or category selection |
+| `Tab` inside dialog | Cycles focus between Delete and Cancel buttons (focus trapped) |
 ## Accessibility notes
 
-- Uses semantic header, main, section, form, table, and heading elements.
-- Provides a skip-to-content link, associated form labels, and visible focus outlines.
-- Inline validation text is announced, invalid fields receive `aria-invalid`, and focus moves to the first invalid field.
-- Live regions announce app actions and update the summary and transaction list.
-- The transaction table becomes a labeled card-like layout on narrow screens.
-- Reduced-motion preferences are respected.
-- Color contrast has not yet been independently measured; complete a contrast audit before submission.
+Skip-to-content link at top of page (#main-content)
+All form inputs have associated <label> elements bound via for/id
+Error messages use role="alert" with aria-live="assertive" for immediate announcement
+Budget status uses aria-live="polite" when within budget, switches to "assertive" when exceeded
+Search result count announced via role="status" / aria-live="polite"
+Confirmation dialog uses role="dialog", aria-modal="true", focus trapped inside, Escape closes
+All icon-only buttons have aria-label
+Colour contrast ratio ≥ 4.5:1 for all text/background combinations
+Visible focus outline on all interactive elements (2px solid accent colour)
+aria-invalid="true" set on inputs that fail validation
+Bar chart marked role="img" with aria-label; each bar day label includes accessible text
 
-## Project structure
+# How to Run Tests
+Open tests.html directly in any browser (no server needed — uses plain <script>, not ES modules)
+Click ▶ Run All Tests
+Results are grouped by category with PASS/FAIL badges and a progress bar
+Tests cover: description validation, amount validation, date validation, category validation, budget/rate validation, compileRegex, isValidRegex, highlight, import validation, and advanced regex patterns.
 
-```text
+# How to Run the App
+#Option A — Local file
+Open index.html directly in a browser. All features work via localStorage.
+
+#Option B — Live Server (recommended)
+#VS Code: right-click index.html → Open with Live Server 
+#or
+npx serve .
+# Load seed data
+Open the browser console on index.html and run:
+
+fetch('seed.json')
+  .then(r => r.json())
+  .then(d => { localStorage.setItem('sft:records', JSON.stringify(d)); location.reload(); });
+
+# File Structure
 student-finance-tracker/
 ├── assets/
-│   └── spec.md
+│   └── spec.md         M1 wireframes, data model, and a11y plan
 ├── scripts/
-│   ├── app.js
-│   ├── search.js
-│   ├── state.js
-│   ├── storage.js
-│   ├── ui.js
-│   └── validators.js
+│   ├── app.js          Entry point — event wiring
+│   ├── search.js       compileRegex, isValidRegex, highlight
+│   ├── state.js        Central state, CRUD, stats, ID generator
+│   ├── storage.js      localStorage read/write helpers
+│   ├── ui.js           DOM rendering — dashboard, records, forms
+│   └── validators.js   All regex validation rules
 ├── styles/
-│   └── styles.css
+│   └── main/syly.css        Mobile-first responsive styles
 ├── .gitignore
 ├── index.html
 ├── README.md
-├── seed.json
-└── tests.html
-```
+├── seed.json           15 diverse sample records
+└── tests.html          In-browser test suits
 
-## Run the app locally
-
-The app uses JavaScript modules, so serve the project directory over HTTP rather than opening `index.html` directly.
-
-```powershell
-cd "C:\Users\HP\OneDrive\Desktop\student-finance-tracker"
-python -m http.server 8000
-```
-
-Then open <http://localhost:8000/>. In VS Code, you can also use the Live Server extension.
-
-## Run tests
-
-With the local server running, open <http://localhost:8000/tests.html>. The page runs browser-based assertions for transaction validation, malformed regex handling, safe highlighting, search, and sorting. Review the displayed PASS/FAIL results.
-
-## Data model
-
-Each transaction is stored as a JSON object:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | Transaction identifier |
-| `description` | string | Short description, 3–80 characters |
-| `amount` | number | Positive amount with up to two decimal places |
-| `category` | string | Category label |
-| `date` | string | Calendar date in `YYYY-MM-DD` format |
-| `type` | string | `income` or `expense` |
-| `createdAt` | string | ISO timestamp for record creation |
-| `updatedAt` | string | ISO timestamp for last update |
-
-## Milestones
-
-| Milestone | Status |
-| --- | --- |
-| M1 — Spec and wireframes | Specification documented in `assets/spec.md` |
-| M2 — Semantic HTML and base CSS | Implemented; responsive checks still recommended |
-| M3 — Forms and regex validation | Core validation and assertion page implemented; advanced validation rule still needed |
-| M4 — Render, sort, and regex search | Implemented |
-| M5 — Statistics and caps | Summary cards and spending caps implemented; 7-day chart is not implemented |
-| M6 — Persistence, import/export, and settings | Implemented with browser `localStorage` |
-| M7 — Polish and accessibility audit | In progress; measure contrast and complete keyboard/device audit |
-
-## Deployment and remaining submission items
-
-The intended deployment is GitHub Pages: <https://aalier1-dot.github.io/student-finance-tracker/>. Confirm it loads after the latest push and that the tests page is available at <https://aalier1-dot.github.io/student-finance-tracker/tests.html>.
-
-**Demo video:** 
+#	Milestone	Status
+M1  spec & Wireframes	✅
+M2	Semantic Html & Bass CSS	✅
+M3	Forms & Regex Validation	✅
+M4	Render + Sort + Regex Search	✅
+M5	Stats + Cap/Targets	✅
+M6	Persistence + Import/Export + Settings	✅
+M7	polish & A11y Audit	✅
