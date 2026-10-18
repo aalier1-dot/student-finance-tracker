@@ -1,16 +1,138 @@
 [
-  {"id":"txn_01","description":"Lunch at cafeteria","amount":12.5,"category":"Food","date":"2026-09-12","type":"expense","createdAt":"2026-09-12T12:40:00Z","updatedAt":"2026-09-12T12:40:00Z"},
-  {"id":"txn_02","description":"Chemistry textbook","amount":89.99,"category":"Books","date":"2026-09-08","type":"expense","createdAt":"2026-09-08T09:00:00Z","updatedAt":"2026-09-08T09:00:00Z"},
-  {"id":"txn_03","description":"Monthly bus pass","amount":45,"category":"Transport","date":"2026-09-20","type":"expense","createdAt":"2026-09-20T07:30:00Z","updatedAt":"2026-09-20T07:30:00Z"},
-  {"id":"txn_04","description":"Coffee with friends","amount":8.75,"category":"Entertainment","date":"2026-09-28","type":"expense","createdAt":"2026-09-28T18:05:00Z","updatedAt":"2026-09-28T18:05:00Z"},
-  {"id":"txn_05","description":"Part-time job payout","amount":430,"category":"Income","date":"2026-09-01","type":"income","createdAt":"2026-09-01T15:00:00Z","updatedAt":"2026-09-01T15:00:00Z"},
-  {"id":"txn_06","description":"Weekly grocery restock","amount":64.2,"category":"Food","date":"2026-09-18","type":"expense","createdAt":"2026-09-18T17:00:00Z","updatedAt":"2026-09-18T17:00:00Z"},
-  {"id":"txn_07","description":"Study group software","amount":15,"category":"Technology","date":"2026-10-03","type":"expense","createdAt":"2026-10-03T11:45:00Z","updatedAt":"2026-10-03T11:45:00Z"},
-  {"id":"txn_08","description":"Scholarship stipend","amount":1200,"category":"Income","date":"2026-10-15","type":"income","createdAt":"2026-10-15T08:00:00Z","updatedAt":"2026-10-15T08:00:00Z"},
-  {"id":"txn_09","description":"Late-night train home","amount":14.5,"category":"Transport","date":"2026-10-24","type":"expense","createdAt":"2026-10-24T23:10:00Z","updatedAt":"2026-10-24T23:10:00Z"},
-  {"id":"txn_10","description":"Cinema & snacks","amount":19.99,"category":"Entertainment","date":"2026-10-29","type":"expense","createdAt":"2026-10-29T20:00:00Z","updatedAt":"2026-10-29T20:00:00Z"},
-  {"id":"txn_11","description":"Tiny printing fee","amount":0.01,"category":"Study Supplies","date":"2026-10-31","type":"expense","createdAt":"2026-10-31T10:00:00Z","updatedAt":"2026-10-31T10:00:00Z"},
-  {"id":"txn_12","description":"Laptop repair refund","amount":2500,"category":"Income","date":"2026-11-01","type":"income","createdAt":"2026-11-01T12:00:00Z","updatedAt":"2026-11-01T12:00:00Z"},
-  {"id":"txn_13","description":"Café supplies & tea","amount":22.4,"category":"Food & Drink","date":"2026-10-11","type":"expense","createdAt":"2026-10-11T16:00:00Z","updatedAt":"2026-10-11T16:00:00Z"},
-  {"id":"txn_14","description":"Lab notebook — semester","amount":6.5,"category":"Books","date":"2026-10-13","type":"expense","createdAt":"2026-10-13T14:00:00Z","updatedAt":"2026-10-13T14:00:00Z"}
-]
+  {
+    "id": "rec_0001",
+    "description": "Lunch at cafeteria",
+    "amount": 1500,
+    "category": "Food",
+    "date": "2026-10-25",
+    "createdAt": "2026-10-25T11:30:00.000Z",
+    "updatedAt": "2026-10-25T11:30:00.000Z"
+  },
+  {
+    "id": "rec_0002",
+    "description": "Chemistry textbook",
+    "amount": 12000,
+    "category": "Books",
+    "date": "2026-10-23",
+    "createdAt": "2026-10-23T09:00:00.000Z",
+    "updatedAt": "2026-10-23T09:00:00.000Z"
+  },
+  {
+    "id": "rec_0003",
+    "description": "Bus pass for the month",
+    "amount": 8000,
+    "category": "Transport",
+    "date": "2026-10-016",
+    "createdAt": "2026-10-16T17:18:00.000Z",
+    "updatedAt": "2026-10-16T17:18:00.000Z"
+  },
+  {
+    "id": "rec_0004",
+    "description": "Coffee with friends",
+    "amount": 2500.50,
+    "category": "Entertainment",
+    "date": "2026-10-28",
+    "createdAt": "2026-10-28T15:00:00.000Z",
+    "updatedAt": "2026-10-28T15:00:00.000Z"
+  },
+  {
+    "id": "rec_0005",
+    "description": "Semester registration fees",
+    "amount": 350000,
+    "category": "Fees",
+    "date": "2025-09-03",
+    "createdAt": "2025-10-18T08:00:00.000Z",
+    "updatedAt": "2026-10-18T08:00:00.000Z"
+  },
+  {
+    "id": "rec_0006",
+    "description": "Dinner at Kigali restaurant",
+    "amount": 7500.75,
+    "category": "Food",
+    "date": "2026-10-29",
+    "createdAt": "2026-10-29T19:00:00.000Z",
+    "updatedAt": "2026-10-29T19:00:00.000Z"
+  },
+  {
+    "id": "rec_0007",
+    "description": "USB drive for assignments",
+    "amount": 4500,
+    "category": "Books",
+    "date": "2025-09-10",
+    "createdAt": "2026-10-18T10:30:00.000Z",
+    "updatedAt": "2026-10-18T10:30:00.000Z"
+  },
+  {
+    "id": "rec_0008",
+    "description": "Movie night ticket",
+    "amount": 3000,
+    "category": "Entertainment",
+    "date": "2026-10-20",
+    "createdAt": "2026-10-20T17:00:00.000Z",
+    "updatedAt": "2026-10-20T17:00:00.000Z"
+  },
+  {
+    "id": "rec_0009",
+    "description": "Moto taxi to campus",
+    "amount": 500,
+    "category": "Transport",
+    "date": "2026-10-30",
+    "createdAt": "2026-10-30T07:45:00.000Z",
+    "updatedAt": "2026-10-30T07:45:00.000Z"
+  },
+  {
+    "id": "rec_0010",
+    "description": "Notebook and pens",
+    "amount": 1800,
+    "category": "Books",
+    "date": "2025-09-05",
+    "createdAt": "2026-10-05T09:00:00.000Z",
+    "updatedAt": "2026-10-05T09:00:00.000Z"
+  },
+  {
+    "id": "rec_0011",
+    "description": "Water and snacks",
+    "amount": 800.25,
+    "category": "Food",
+    "date": "2026-10-20",
+    "createdAt": "2026-10-20T12:00:00.000Z",
+    "updatedAt": "2026-10-20T12:00:00.000Z"
+  },
+  {
+    "id": "rec_0012",
+    "description": "Internet data bundle",
+    "amount": 5000,
+    "category": "Other",
+    "date": "2026-10-18",
+    "createdAt": "2026-10-18T19:00:00.000Z",
+    "updatedAt": "2026-10-18T19:00:00.000Z"
+  },
+  {
+    "id": "rec_0013",
+    "description": "Tea at campus canteen",
+    "amount": 300.99,
+    "category": "Food",
+    "date": "2026-0-28",
+    "createdAt": "2026-10-18T19:00:00.000Z",
+    "updatedAt": "2026-18-18T19:00:00.000Z"
+  },
+  {
+    "id": "rec_0014",
+    "description": "Lab coat and gloves",
+    "amount": 9999.99,
+    "category": "Fees",
+    "date": "2025-01-31",
+    "createdAt": "2026-18-19T10:00:00.000Z",
+    "updatedAt": "2026-18-19T10:00:00.000Z"
+  },
+  {
+    "id": "rec_0015",
+    "description": "Single pen",
+    "amount": 50,
+    "category": "Books",
+    "date": "2026-10-18",
+    "createdAt": "2026-10-18T19:00:00.000Z",
+    "updatedAt": "2026-10-18T19:00:00.000Z"
+  }
+
+  

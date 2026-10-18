@@ -1,66 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+
+<head>
+    </meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Finance Tracker Tests</title>
+    <title>Tests - Student Finance Tracker</title>
     <style>
-      body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; font: 1rem/1.5 system-ui, sans-serif; }
-      .pass { color: #137b59; }
-      .fail { color: #bd3d4c; }
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #222639;
+            --border: #2e3250;
+            --accent: #6c63ff;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: .25rem;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-bottom: 2rem;
+            font-size: .9rem;
+        }
+
+        h2 {
+            font-size: 1.05rem;
+            color: var(--accent);
+            margin: 2rem 0 .75rem;
+            padding-bottom: .4rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #summary {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .sum-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sum-label {
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--muted);
+        }
+
+        .sum-val {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        #sum-pass {
+            color: var(--green);
+        }
+
+        #sum-fail {
+            color: var(--red);
+        }
+
+        #sum-skip {
+            color: var(--yellow);
+        }
+
+        #progress-wrap {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--green);
+            border-radius: 4px;
+            transition: width .4s ease;
+        }
+
+        .test-row {
+            display: grid;
+            grid-template-columns: 1.8rem 1fr auto;
+            gap: .5rem .75rem;
+            align-items: start;
+            padding: .55rem .75rem;
+            border-radius: 6px;
+            margin-bottom: .3rem;
+            font-size: .875rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+        }
+
+        .test-row.pass {
+            border-color: rgba(34, 197, 94, .3);
+        }
+
+        .test-row.fail {
+            border-color: rgba(239, 68, 68, .4);
+            background: rgba(239, 68, 68, .06);
+        }
+
+        .test-row.skip {
+            border-color: rgba(245, 158, 11, .3);
+        }
+
+        .icon {
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .pass .icon::before {
+            content: "PASS";
+            color: var(--green);
+            font-weight: 700;
+            font-size: .7rem;
+        }
+
+        .fail .icon::before {
+            content: "FAIL";
+            color: var(--red);
+            font-weight: 700;
+            font-size: .7rem;
+        }
+
+        .skip .icon::before {
+            content: "SKIP";
+            color: var(--yellow);
+            font-weight: 700;
+            font-size: .7rem;
+        }
+
+        .test-name {
+            color: var(--text);
+        }
+
+        .test-detail {
+            font-size: .78rem;
+            color: var(--muted);
+            grid-column: 2;
+            margin-top: 1px;
+        }
+
+        .fail .test-detail {
+            color: #fca5a5;
+        }
+
+        .badge {
+            font-size: .7rem;
+            padding: .15em .55em;
+            border-radius: 20px;
+            white-space: nowrap;
+            align-self: center;
+        }
+
+        .badge-pass {
+            background: rgba(34, 197, 94, .15);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, .3);
+        }
+
+        .badge-fail {
+            background: rgba(239, 68, 68, .15);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        .badge-skip {
+            background: rgba(245, 158, 11, .15);
+            color: var(--yellow);
+            border: 1px solid rgba(245, 158, 11, .3);
+        }
+
+        #run-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: .6rem 1.4rem;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+        }
+
+        #run-btn:hover {
+            background: #5a52e0;
+        }
+
+        #output {
+            margin-top: 1rem;
+        }
     </style>
-  </head>
-  <body>
-    <h1>Finance Tracker Tests</h1>
-    <p id="summary" aria-live="polite">Running tests…</p>
-    <ol id="results"></ol>
-    <script type="module">
-      import { compileRegex, validateTransaction, highlight } from './scripts/validators.js';
-      import { filterTransactions, sortTransactions } from './scripts/search.js';
+</head>
+</body>
+<h2>Test Suite - Student Finance Tracker</h1>
+    <p class="subtitle">Validates all regex rule, search utilies, and import validation logic. (M3)</p>
+    <button id="run-btn">Run All Tests</button>
+    <div id="summary" aria-live="polite">
+        <div class="sum-item"><span class="sum-label">Total</span><span class="sum-val" id="sum-total">-</span></div>
+        <div class="sum-item"><span class="sum-label">Passed</span><span class="sum-val" id="sum-pass">-</span></div>
+        <div class="sum-item"><span class="sum-label">Failed</span><span class="sum-val" id="sum-fail">-</span></div>
+        <div class="sum-item"><span class="sum-label">Skipped</span><span class="sum-val" id="sum-skip">-</span></div>
+    </div>
+    <div id="progress-wrap">
+        <div id="progress-bar"></div>
+    </div>
+    <div id="output" role="region" aria-label="Test results"></div>
 
-      const results = [];
-      function assert(condition, label) {
-        results.push({ passed: Boolean(condition), label });
-      }
+    <script>
+        /* validators - mirrored from scripts/validators.js */
+        var RE_DESCRIPTION = /^\S(?:.*\S)?$/;
+        var RE_DOUBLE_WORD = /\b(\w+)\s+\1\b/i;
+        var RE_AMOUNT = /^(0|[1-9]\d*)(\.\d{1,2})?$/;
+        var RE_DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+        var RE_CATEGORY = /^[A-Za-z]+(?:[ -][A-Za-z]+)*$/;
+        var RE_POSITIVE_INT = /^(?!0+$)\d+(\.\d{1,2})?$/;
 
-      const valid = {
-        description: 'Weekly groceries',
-        amount: 34.25,
-        category: 'Food & Drink',
-        date: '2026-10-13',
-        type: 'expense'
-      };
-      assert(validateTransaction(valid).isValid, 'Accepts a valid transaction.');
-      assert(!validateTransaction({ ...valid, amount: -1 }).isValid, 'Rejects negative amounts.');
-      assert(!validateTransaction({ ...valid, amount: 1.234 }).isValid, 'Rejects amounts with more than two decimal places.');
-      assert(!validateTransaction({ ...valid, description: 'x' }).isValid, 'Rejects too-short descriptions.');
-      assert(!validateTransaction({ ...valid, category: '<script>' }).isValid, 'Rejects unsafe category text.');
-      assert(!validateTransaction({ ...valid, date: '2026-02-30' }).isValid, 'Rejects impossible calendar dates.');
-      assert(!validateTransaction({ ...valid, type: 'bonus' }).isValid, 'Rejects unknown transaction types.');
-      assert(compileRegex('food', 'i').test('FOOD shop'), 'Compiles valid case-insensitive regex.');
-      assert(compileRegex('[') === null, 'Returns null for malformed regex.');
-      assert(highlight('<img src=x>', null) === '&lt;img src=x&gt;', 'Escapes HTML in displayed text.');
-
-      const rows = [
-        { id: 'one', description: 'Bus pass', amount: 15, category: 'Transport', type: 'expense', date: '2026-10-03' },
-        { id: 'two', description: 'Rent', amount: 400, category: 'Housing', type: 'expense', date: '2026-10-11' },
-        { id: 'three', description: 'Paycheck', amount: 1000, category: 'Income', type: 'income', date: '2026-10-01' }
-      ];
-      assert(filterTransactions(rows, 'bus').length === 1, 'Filters transaction records with regex.');
-      assert(filterTransactions(rows, '[').length === rows.length, 'Does not crash on malformed search regex.');
-      assert(sortTransactions(rows, 'amount', 'desc')[0].id === 'three', 'Sorts numeric amounts descending.');
-      assert(sortTransactions(rows, 'date', 'asc')[0].id === 'three', 'Sorts ISO dates ascending.');
-
-      const list = document.querySelector('#results');
-      results.forEach(({ passed, label }) => {
-        const item = document.createElement('li');
-        item.className = passed ? 'pass' : 'fail';
-        item.textContent = `${passed ? 'PASS' : 'FAIL'}: ${label}`;
-        list.append(item);
-      });
-      const passed = results.filter((result) => result.passed).length;
-      document.querySelector('#summary').textContent = `${passed}/${results.length} checks passed.`;
-      document.title = `${passed === results.length ? 'PASS' : 'FAIL'} — Finance Tracker Tests`;
-    </script>
-  </body>
-</html>
+        function validateDescription(val) {
+            if (!val || !val.trim()) return 'Description is required.';
+            if (!RE_DESCRIPTION.test(val)) return 'No leading or trailing spaces allowed.';
+            if (RE_DOUBLE_WORD.test(val)) return 'Duplicate consecutive word detected.';
+            if (val.length < 2) return 'Description must be at least 2 characters.';
+            if (val.length > 120) return 'Description must be 120 characters or fewer.';
+            return null; 

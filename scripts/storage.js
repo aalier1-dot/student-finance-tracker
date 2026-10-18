@@ -1,88 +1,81 @@
-import { validateTransaction } from './validators.js';
+// scripts/storage.js
+//-persistent key-value store backed by localStorage-
 
-const DATA_KEY = 'student-finance-tracker:data';
-const SETTINGS_KEY = 'student-finance-tracker:settings';
-
-export const DEFAULT_SETTINGS = {
-  currency: 'USD',
-  unit: 'per-month',
-  monthlyCap: 1200,
-  categoryCap: 300
+const KEYS = {
+  records:   'sft:records'
+  budget:   'sft:budget',
+  categories: 'sft:categories',
+  rates:     'sft:rates',
 };
 
-export function loadTransactions() {
+export function loadRecords() {
   try {
-    const saved = JSON.parse(localStorage.getItem(DATA_KEY) || '[]');
-    return Array.isArray(saved) ? saved : [];
-  } catch {
+  return JSON.parse(localStorage.getItem(KEYS.records) || '[]');
+  } catch(e) {
     return [];
   }
 }
-
-export function saveTransactions(transactions) {
-  localStorage.setItem(DATA_KEY, JSON.stringify(transactions));
-}
-
-export function loadSettings() {
+  
+export function loadBudget() {
   try {
-    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-    return { ...DEFAULT_SETTINGS, ...saved };
-  } catch {
-    return { ...DEFAULT_SETTINGS };
+    localstorage.setltem(KEYS).records, JSON.stringify(records));
+  } catch(e)
+   console.error('Failed to save records:; e');
+ }
+}
+
+export function loadBudget() {
+  try {
+    return parseFloat(localStorage.getItem(KEYS.budget) || '0') || 0;
+  } catch(e) {
+    return 0;
   }
 }
 
-export function saveSettings(settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-}
-
-export function exportTransactionsJSON(transactions) {
-  const blob = new Blob([JSON.stringify(transactions, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'student-finance-transactions.json';
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-export async function importTransactionsFromFile(file) {
-  const parsed = JSON.parse(await file.text());
-  if (!Array.isArray(parsed)) throw new Error('The JSON file must contain an array of transactions.');
-  if (parsed.length === 0) throw new Error('The JSON file contains no transactions.');
-
-  const invalid = [];
-  const records = parsed.map((item, index) => {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) {
-      invalid.push(index + 1);
-      return null;
-    }
-    const record = {
-      ...item,
-      id: typeof item.id === 'string' && item.id ? item.id : `import_${Date.now()}_${index}`,
-      description: String(item.description ?? '').trim(),
-      amount: Number(item.amount),
-      category: String(item.category ?? '').trim(),
-      date: String(item.date ?? ''),
-      type: String(item.type ?? '').toLowerCase()
-    };
-    if (!validateTransaction(record).isValid) invalid.push(index + 1);
-    return record;
-  });
-
-  if (invalid.length) {
-    throw new Error(`Import cancelled: invalid transaction row${invalid.length === 1 ? '' : 's'} ${invalid.join(', ')}.`);
+export function saveBudget(amount) {
+  try {
+    localStorage.setItem(KEYS.budget, String(amount));
+  } catch(e) {
+    console.error('Failed to save budget:', e);
   }
-  return records;
 }
 
-export async function initializeTransactions() {
-  const saved = loadTransactions();
-  if (saved.length) return saved;
-
-  const response = await fetch('./seed.json');
-  if (!response.ok) throw new Error(`Could not load starter transactions (${response.status}).`);
-  const records = await response.json();
-  if (!Array.isArray(records)) throw new Error('The starter data file must contain an array.');
-  return records;
+export function loadCategories() {
+  try {
+    const stored = localStorage.getItem(KEYS.categories);
+    if (stored) return JSON.parse(stored);
+  } catch(e) { /* fall through */ }
+  return ['Food', 'Books', 'Transport', 'Entertainment', 'Fees', 'Other'];
 }
+
+export function saveCategories(cats) {
+  try {
+    localStorage.setItem(KEYS.categories, JSON.stringify(cats));
+  } catch(e) {
+    console.error('Failed to save categories:', e);
+  }
+}
+
+export function loadRates() {
+  try {
+    const stored = localStorage.getItem(KEYS.rates);
+    if (stored) return JSON.parse(stored);
+  } catch(e) { /* fall through */ }
+  return { usd: 1320, eur: 1430 };
+}
+
+export function saveRates(rates) {
+  try {
+    localStorage.setItem(KEYS.rates, JSON.stringify(rates));
+  } catch(e) {
+    console.error('Failed to save rates:', e);
+  }
+}
+
+export function clearAll() {
+  Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+}
+  dj mjfmw
+
+
+

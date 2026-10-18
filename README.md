@@ -3,7 +3,7 @@
 
 ## Theme: Student Finance Tracker
  
- #Repository: [aalier1-dot/student-finance-tracker](https://github.com/aalier1-dot/student-finance-tracker) 
+ #Respostory: [aalier1-dot/student-finance-tracker](https://github.com/aalier1-dot/student-finance-tracker) 
 
  #GitHub: [Open the live app](https://aalier1-dot.github.io/student-finance-tracker/)
 

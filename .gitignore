@@ -1,4 +1,31 @@
+# dependencies
 node_modules/
+
+# environment
+.env
+.env.local
+
+# OS files
 .DS_Store
-coverage/
+Thumbs.db
+desktop.ini
+
+# editor
+.vscode/
+.idea/
+*.suo
+*.user
+
+#logs
+*.log
+npm-debug.log*
+
+# build output
+dist/
+out/
+
+
+
+.calva/
+.clj-kondo/
 .lsp/
