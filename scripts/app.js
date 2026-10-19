@@ -19,25 +19,12 @@ import {
 import { compileRegex, isValidRegex } from './search.js';
 import { saveRecords, clearAll } from './storage.js';
 
-/* ── Safe helpers: a missing element logs a warning instead of crashing the whole file ── */
-const on = (selector, event, handler) => {
-  const el = document.querySelector(selector);
-  if (!el) { console.warn(`Missing element: ${selector}`); return; }
-  el.addEventListener(event, handler);
-};
-const setVal = (id, value) => {
-  const el = document.getElementById(id);
-  if (!el) { console.warn(`Missing element: #${id}`); return; }
-  el.value = value;
-};
-
 /* ── Bootstrap ── */
 initState();
 renderDashboard();
 renderRecords();
 renderCategories();
-const yearEl = document.getElementById('footer-year');
-if (yearEl) yearEl.textContent = new Date().getFullYear();
+document.getElementById('footer-year').textContent = new Date().getFullYear();
 if (typeof lucide !== 'undefined') lucide.createIcons();
 
 /* ════════════════════════════════════════════════
@@ -52,6 +39,7 @@ if (typeof lucide !== 'undefined') lucide.createIcons();
     btn.setAttribute('aria-expanded', String(open));
     btn.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
   });
+  // Close nav when a link is clicked
   nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
     nav.classList.remove('open');
     btn.setAttribute('aria-expanded', 'false');
@@ -92,9 +80,11 @@ txnForm.addEventListener('submit', e => {
   const id = editIdEl.value;
 
   if (id) {
+    // Edit mode
     updateRecord(id, { description: desc.trim(), amount: parseFloat(amt), category: cat, date });
     flashStatus('form-status', '✓ Transaction updated.');
   } else {
+    // Add mode
     addRecord({
       id: genId(),
       description: desc.trim(),
@@ -193,8 +183,8 @@ document.getElementById('dialog-confirm').addEventListener('click', () => {
     renderDashboard();
     renderRecords();
     renderCategories();
-    setVal('rate-usd', state.rates.usd);
-    setVal('rate-eur', state.rates.eur);
+    document.getElementById('rate-usd').value = state.rates.usd;
+    document.getElementById('rate-eur').value = state.rates.eur;
     flashStatus('data-status', '✓ All data cleared.');
   } else if (pendingDeleteId) {
     deleteRecord(pendingDeleteId);
@@ -207,8 +197,10 @@ document.getElementById('dialog-confirm').addEventListener('click', () => {
 
 document.getElementById('dialog-cancel').addEventListener('click', closeDialog);
 
+// Close on backdrop click
 dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
 
+// Trap focus inside dialog & close on Escape
 dialog.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeDialog();
   if (e.key === 'Tab') {
@@ -279,7 +271,7 @@ document.getElementById('search-clear').addEventListener('click', () => {
 /* ════════════════════════════════════════════════
    BUDGET
 ════════════════════════════════════════════════ */
-on('#budget-save', 'click', () => {
+document.getElementById('budget-save').addEventListener('click', () => {
   const val = document.getElementById('budget-input').value;
   const errEl = document.getElementById('budget-error');
   const err = validateBudget(val);
@@ -302,7 +294,7 @@ function syncCurrencyBtns() {
 }
 syncCurrencyBtns();
 
-on('.currency-toggle', 'click', e => {
+document.querySelector('.currency-toggle').addEventListener('click', e => {
   const btn = e.target.closest('.currency-btn');
   if (!btn) return;
   state.displayCurrency = btn.dataset.cur;
@@ -315,10 +307,11 @@ on('.currency-toggle', 'click', e => {
 /* ════════════════════════════════════════════════
    SETTINGS — Currency rates
 ════════════════════════════════════════════════ */
-setVal('rate-usd', state.rates.usd);
-setVal('rate-eur', state.rates.eur);
+// Pre-fill rate inputs from state
+document.getElementById('rate-usd').value = state.rates.usd;
+document.getElementById('rate-eur').value = state.rates.eur;
 
-on('#rates-save', 'click', () => {
+document.getElementById('rates-save').addEventListener('click', () => {
   const usdVal = document.getElementById('rate-usd').value;
   const eurVal = document.getElementById('rate-eur').value;
   const eUsd = validateRate(usdVal);
@@ -332,7 +325,7 @@ on('#rates-save', 'click', () => {
 });
 
 // Quick converter
-on('#conv-btn', 'click', () => {
+document.getElementById('conv-btn').addEventListener('click', () => {
   const amt = parseFloat(document.getElementById('conv-amount').value);
   const to = document.getElementById('conv-to').value;
   const result = document.getElementById('conv-result');
@@ -346,14 +339,13 @@ on('#conv-btn', 'click', () => {
 /* ════════════════════════════════════════════════
    SETTINGS — Categories
 ════════════════════════════════════════════════ */
-on('#add-cat-btn', 'click', () => {
+document.getElementById('add-cat-btn').addEventListener('click', () => {
   const input = document.getElementById('new-cat');
   const errEl = document.getElementById('err-new-cat');
   const val = input.value.trim();
   const err = validateCategoryName(val);
   showError(input, errEl, err);
   if (err) return;
-
   const duplicate = state.categories.find(c => c.toLowerCase() === val.toLowerCase());
   if (duplicate) {
     showError(input, errEl, `"${duplicate}" already exists. Please enter another category.`);
@@ -363,10 +355,9 @@ on('#add-cat-btn', 'click', () => {
   renderCategories();
   input.value = '';
   errEl.textContent = '';
-  flashStatus('data-status', `✓ Category "${val}" added.`);
 });
 
-on('#cat-list', 'click', e => {
+document.getElementById('cat-list').addEventListener('click', e => {
   const btn = e.target.closest('button[data-cat]');
   if (!btn) return;
   const cat = btn.dataset.cat;
@@ -382,68 +373,54 @@ on('#cat-list', 'click', e => {
 /* ════════════════════════════════════════════════
    SETTINGS — Data management
 ════════════════════════════════════════════════ */
-// Export JSON (records + categories + rates)
-on('#export-btn', 'click', () => {
-  const payload = { records: state.records, categories: state.categories, rates: state.rates };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+// Export JSON
+document.getElementById('export-btn').addEventListener('click', () => {
+  const data = JSON.stringify(state.records, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'), {
     href: url,
     download: `finance-tracker-export-${new Date().toISOString().slice(0, 10)}.json`,
   });
-  document.body.appendChild(a);
   a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  URL.revokeObjectURL(url);
   flashStatus('data-status', '✓ Exported successfully.');
 });
 
-// Import JSON — button opens the file picker
-on('#import-btn', 'click', () => document.getElementById('import-input')?.click());
-
-// Accepts the old format (array) or the new format ({ records, categories, rates })
-on('#import-input', 'change', e => {
+// Import JSON
+document.getElementById('import-input').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     let parsed;
     try { parsed = JSON.parse(ev.target.result); }
-    catch { flashStatus('data-status', '✗ Invalid JSON file.', true); return; }
+    catch (e) { flashStatus('data-status', 'Invalid JSON file.', true); return; }
 
-    const records = Array.isArray(parsed) ? parsed : parsed?.records;
-    const err = validateImport(records);
+    const err = validateImport(parsed);
     if (err) { flashStatus('data-status', `✗ ${err}`, true); return; }
 
     const now = new Date().toISOString();
-    state.records = records.map(r => ({ createdAt: now, updatedAt: now, ...r }));
-    saveRecords(state.records);
+    const normalized = parsed.map(r => ({ createdAt: now, updatedAt: now, ...r }));
 
-    if (Array.isArray(parsed?.categories)) {
-      parsed.categories.forEach(c => {
-        const name = String(c);
-        const exists = state.categories.some(x => x.toLowerCase() === name.toLowerCase());
-        if (!exists && !validateCategoryName(name)) addCategory(name);
-      });
-    }
-
+    state.records = normalized;
+    saveRecords(normalized);
     renderDashboard();
     renderRecords();
-    renderCategories();
-    flashStatus('data-status', `✓ Imported ${records.length} records.`);
+    flashStatus('data-status', `✓ Imported ${parsed.length} records.`);
   };
   reader.readAsText(file);
-  e.target.value = ''; // reset so the same file can be re-imported
+  e.target.value = ''; // reset so same file can be re-imported
 });
 
 // Clear all
-on('#clear-btn', 'click', () => {
+document.getElementById('clear-btn').addEventListener('click', () => {
   pendingDeleteId = '__CLEAR_ALL__';
   openDialog('', true);
 });
 
 /* ════════════════════════════════════════════════
-   ALT+1…6 — jump to sections
+   ALT+1…7 — jump to sections
 ════════════════════════════════════════════════ */
 const sectionKeys = ['about', 'dashboard', 'add-transaction', 'records', 'budget-target', 'settings'];
 document.addEventListener('keydown', e => {
@@ -451,9 +428,8 @@ document.addEventListener('keydown', e => {
   const idx = parseInt(e.key, 10) - 1;
   if (idx >= 0 && idx < sectionKeys.length) {
     e.preventDefault();
-    const target = document.getElementById(sectionKeys[idx]);
-    target?.scrollIntoView({ behavior: 'smooth' });
-    target?.focus();
+    document.getElementById(sectionKeys[idx])?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(sectionKeys[idx])?.focus();
   }
 });
 
@@ -461,6 +437,8 @@ document.addEventListener('keydown', e => {
    WINDOW RESIZE — swap table / cards
 ════════════════════════════════════════════════ */
 window.addEventListener('resize', () => {
-  document.getElementById('records-cards').hidden = window.innerWidth >= 768;
+  const cards = document.getElementById('records-cards');
+  cards.hidden = window.innerWidth >= 768;
 });
 document.getElementById('records-cards').hidden = window.innerWidth >= 768;
+
