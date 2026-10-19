@@ -441,4 +441,4 @@ window.addEventListener('resize', () => {
   cards.hidden = window.innerWidth >= 768;
 });
 document.getElementById('records-cards').hidden = window.innerWidth >= 768;
-uhnvhcqw
+

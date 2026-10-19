@@ -24,8 +24,3 @@ npm-debug.log*
 dist/
 out/
 
-
-
-.calva/
-.clj-kondo/
-.lsp/
