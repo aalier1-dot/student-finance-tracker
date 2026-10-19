@@ -7,8 +7,10 @@
 
  #GitHub: [Open the live app](https://aalier1-dot.github.io/student-finance-tracker/)
 
- #M1 specification: [Wireframe, data model, and accessibility plan](assets/spec.md) 
+ ##My video link: https://drive.google.com/file/d/1SEXcLqVBlCDA9y8KDqEgtVEE4Qmoihf0/view?usp=drive_link
 
+ #M1 specification: [Wireframe, data model, and accessibility plan](assets/spec.md) 
+ 
 ## Features
 
 - Add, edit, and delete transactions with confirmation dialog
