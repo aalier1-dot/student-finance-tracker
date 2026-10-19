@@ -1,430 +1,218 @@
-<DOCTYE HTML>
-    <html lang="en">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NASA Picture of the Day</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #0b0f1a; color: #e8ecf5; }
+    header { padding: 1.5rem 1rem; text-align: center; }
+    h1 { margin: 0 0 .25rem; }
+    .controls { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; padding: 0 1rem 1rem; }
+    input, select, button { padding: .6rem .8rem; border-radius: 6px; border: 1px solid #3a4560; background: #151b2e; color: inherit; font: inherit; }
+    button { background: #2a5bd7; border-color: #2a5bd7; cursor: pointer; }
+    button:hover { background: #3b6ae6; }
+    #status { text-align: center; min-height: 1.5rem; padding: 0 1rem; }
+    #status.error { color: #ff8a8a; }
+    #results { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 1rem; max-width: 1100px; margin: 0 auto; }
+    .card { background: #151b2e; border-radius: 10px; overflow: hidden; }
+    .card img { width: 100%; height: 220px; object-fit: cover; display: block; background: #222a42; }
+    .card .body { padding: .8rem 1rem 1rem; }
+    .card h2 { font-size: 1.05rem; margin: 0 0 .25rem; }
+    .card .date { color: #9aa6c4; font-size: .85rem; margin: 0 0 .5rem; }
+    .card p { font-size: .9rem; line-height: 1.4; margin: 0 0 .5rem; }
+    a { color: #7fb0ff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NASA Picture of the Day</h1>
+    <p>Data from the NASA APOD API</p>
+  </header>
 
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title></title>student Finance Trracker</title>
-        <link rel="stylesheet" href="styles/styles.css" />
-    </head>
+  <div class="controls">
+    <select id="mode" aria-label="What to load">
+      <option value="today">Today</option>
+      <option value="date">Pick a date</option>
+      <option value="random">Random pictures</option>
+      <option value="range">Date range</option>
+    </select>
+    <input type="date" id="date" aria-label="Date of the picture" hidden />
+    <input type="number" id="count" min="1" max="25" value="6" aria-label="How many random pictures" hidden />
+    <input type="date" id="start" aria-label="Start date" hidden />
+    <input type="date" id="end" aria-label="End date" hidden />
+    <button id="load">Load</button>
+  </div>
 
-    <body>
+  <div id="status" role="status" aria-live="polite"></div>
+  <main id="results"></main>
 
-        <!--skip to content-->
-        <a href="#main-content" class="skip-link">skip to main content</a>
+  <script>
+    // 1. SETTINGS ---------------------------------------------------------
+    // Get a free key at api.nasa.gov and paste it here. DEMO_KEY only allows
+    // 30 requests/hour and 50/day, so replace it for real use.
+    const API_KEY = "DEMO_KEY";
+    const BASE_URL = "https://science.nasa.gov/wp-json/wp/v2/apod-basic/";
+    const CACHE_MINUTES = 60;
 
-        <!--HEADER-->
-        <header class="site-header" role="banner">
-            <div class="header-inner">
-                <div class="brand">
-                    <span class="brand-icon" aria-hidden="true">₣</span>
-                </div>
-                <h1 class="brand-title">student Finanace Tracker</h1>
-                <p class="brand-sub">Track every Franc. Own your finances.</p>
-            </div>
-            </div>
-            <button class="nav-toggle" area lable="open navigation" aria-expanded="false" aria-controls="main-nav" <span
-                class="hamburger"></span>
-                <span class="hamburger"></span>
-                <span class="hamburger"></span>
-            </button>
-            <nav id="main-nav" class="main-nav" aria-label="Main navigation">
-                <ul role="list">
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#dashboard">Dashboard</a></li>
-                    <li><a href="#add-transaction">Add Transaction</a></li>
-                    <li><a href="#records">Records</a></li>
-                    <li><a href="#budget-target">Budget</a></li>
-                    <li><a href="#settings">settings</a></li>
-                </ul>
-            </nav>
+    const $ = (id) => document.getElementById(id);
+    const statusEl = $("status");
+    const resultsEl = $("results");
 
-            </div>
-        </header>
+    // 2. BUILD THE URL ----------------------------------------------------
+    function buildUrl() {
+      const params = new URLSearchParams({ api_key: API_KEY });
+      const mode = $("mode").value;
 
-        <!--MAIN-->
-        <main id="main-content">
+      if (mode === "date") {
+        if (!$("date").value) throw new Error("Choose a date.");
+        params.set("date", $("date").value);
+      } else if (mode === "random") {
+        // count cannot be combined with date, start_date or end_date
+        params.set("count", Math.min(25, Math.max(1, Number($("count").value) || 6)));
+      } else if (mode === "range") {
+        if (!$("start").value) throw new Error("Choose a start date.");
+        params.set("start_date", $("start").value);
+        if ($("end").value) params.set("end_date", $("end").value);
+      }
+      return `${BASE_URL}?${params}`;
+    }
 
-            <!--ABOUT-->
-            <section id="about" class="section" aria-labeledby="about-heading" tabindex="-1">
-                <div class="section-inner">
-                    <h2 id="about-heading" class="section-title">About</h2>
+    // 3. FETCH WITH CACHE + ERROR HANDLING --------------------------------
+    async function getData(url) {
+      // Cache by URL so repeat loads don't use up the rate limit.
+      // The key is removed from the cache name so it is never stored twice.
+      const cacheKey = "apod:" + url.replace(/api_key=[^&]+/, "");
+      try {
+        const cached = JSON.parse(localStorage.getItem(cacheKey));
+        if (cached && Date.now() - cached.time < CACHE_MINUTES * 60000) {
+          return cached.data;
+        }
+      } catch (e) { /* ignore a bad cache */ }
 
-                    <p class="about-intro">
-                        Most students spend daily without knowing where it goes. student Finance Tracker can help
-                        students record their expenses, monotor budgets, and analyze their financial decisions, right in
-                        the broweser.
-                    </p>
+      const res = await fetch(url);
 
-                    <!-- How it Works -->
-                    <div class="about-subsection">
-                        <h3 class="about-sub-title">How the app works</h3>
-                        <ol class="how-it-works" aria-label="How It Works in 4 steps">
-                            <li class="how-step">
-                                <i data-lucide="plus-circle" class="how-icon" aria-hidden="true"></i>
-                                <span class="how-label">Add Expenses</span>
-                            </li>
-                            <li class="how-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></li>
-                            <li class="how-step">
-                                <i data-lucide="bar-chart-2" class="how-icon" aria-hidden="true"></i>
-                                <span class="how-label">Track Spending</span>
-                            </li>
-                            <li class="how-arrow" aria-hidden="true"></li> data-lucide="chevron-right"></li>
-                            <li class="how-step">
-                                <i data-lucide="trending-up" class="how-icon" aria-hidden="true"></i>
-                                <span class="how-label">View Trends</span>
-                            </li>
-                            <li class="how-arrow" aria-hidden="true"></i data-lucide="chevron-right"></i></li>
-                            <li class="how-step">
-                                <i data-lucide="target" class="how-icon" aria-hidden="true"></i>
-                                <span class="how-label">Stay on Budget</span>
-                            </li>
-                        </ol>
-                    </div>
-                    <!-- Why Use This App? -->
-                    <div class="about-subsection">
-                        <h3 class="about-sub-title"></h3>
-                        <ul class="benefit-grid" aria-label="Benefits of Using Student Finance Traker">
-                            <li class="benefit-card">
-                                <i data-lucide="lightbulb" class="benefit-icon" aria-hidden="true"></i>
-                                <strong class="benefit-title">Know where your money goes</strong>
-                                <p class="benefit-esc">Every transaction is logged so you always have a clear
-                                    picture of your spending.</p>
-                            </li>
-                            <li class="benefit-card">
-                                <i data-lucide="shield-check" class="benefit-icon" aria-hidden="true"></i>
-                                <strong class="benefit-title">stay within your budget</strong>
-                                <p class="benefit-desc">set a monthly budget cap and get instant alerts before you
-                                    overspend.</p>
-                            </li>
-                            <li class="benefit-card">
-                                <i data-lucide="hard-drive" class="benefit-icon" aria-hidden="true"></i>
-                                <strong class="benefit-title">Build better spending habits</strong>
-                                <p class="benefit-desc">Visualise 7-day trends and category breakdowns to spot
-                                    patterns early.</p>
-                            </li>
-                            <li class="benefit-card">
-                                <i data-lucide="hard-drive" class="benefit-icon" aria-hidden="true"></i>
-                                strong class="benefit-title">Backup your financial records</strong>
-                                <p class="benefit-desc">Export your data as JSON anytime and import it back with one
-                                    click.</p>
-                            </li>
-                        </ul>
-                    </div>
+      if (res.status === 429) {
+        throw new Error("Rate limit reached. Wait an hour or use your own API key.");
+      }
+      if (res.status === 403) {
+        throw new Error("The API key was rejected. Check API_KEY.");
+      }
+      if (!res.ok) {
+        throw new Error(`Request failed (${res.status}).`);
+      }
 
-                    <!-- Developer contact-->
-                    <div class="contact-card">
-                        <h3>Developer</h3>
-                        <ul class="contact-list">
-                            <li><span class="label">Name</span> aalier1-dot</li>
-                            <li><span class="label">Github</span> <a href="https://github.com/aalier1-dot"
-                                    target="_blank" rel="noopener">github.com/aalier1-dot</a></li>
-                            <li><span class="label">Email</span> <a href="mailto:a.alier1@alustudent.com"><a href=""
-                                        class="alier1"></a>@alustudent.com</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
+      const remaining = res.headers.get("X-RateLimit-Remaining");
+      if (remaining !== null) console.log("Requests left this hour:", remaining);
 
-            <!-- ── DASHBOARD ── -->
-            <section id="dashboard" class="section section--alt" aria-labelledby="dashboard-heading" tabindex="-1">
-                <div class="section-inner">
-                    <h2 id="dash-heading" class="section-title">Dashboard</h2>
+      const data = await res.json();
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), data }));
+      } catch (e) { /* storage full or disabled */ }
+      return data;
+    }
 
-                    <div class="stat-grid" role="aria-label=" Financial statics">
-                        <div class="stat-card" role="listem">
-                            <span class="stat-label">Total Transctions</span>
-                            <span class="stat-value" id="stat-total-count">0</span>
-                        </div>
-                        <div> class="stat-card" role="listem">
-                            <span class="stat-label">Total spent</span>
-                            <span class="stat-value" id="stat-top-cat">-</span>
-                        </div>
-                        <div class="stat-card" role="listem">
-                            <span class="stat-label"> Top Category</span>
-                            <span class="stat-value" id="stat-top-cat"></span>
-                        </div>
-                        <div class="stat-card" role="listitem">
-                            <span class="stat-label">Average Amount</span>
-                            <span class="stat-value" id="stat-avg">RWF 0</span>
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3 class="chart-title">Last 7 Days</h3>
-                        <div class="bar-chart" id="bar-chart" aria-label="Spending trend for the last 7 days"
-                            role="img">
-                            <!-- bars injected by ui.js -->
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3 class="chart-title">By Category</h3>
-                        <ul class="cat-breakdown" id="cat-breakdown" aria-label="Spending by category">
-                            <!-- injected by ui.js -->
-                        </ul>
-                    </div>
-                </div>
-                </div>
-            </section>
+    // 4. PICK FIELDS SAFELY -----------------------------------------------
+    // The exact field names can differ, so check each one in turn.
+    // Open DevTools > Console to see the full object and adjust if needed.
+    function pickImage(item) {
+      const candidates = [item.hdurl, item.url, item.image, item.thumbnail, item.thumbnail_url];
+      for (const c of candidates) {
+        if (typeof c === "string" && /^https?:/.test(c)) return c;
+        if (c && typeof c.url === "string") return c.url;
+      }
+      return "";
+    }
 
-            <!-- ── ADD TRANSACTION ── -->
-            <section id="add-transaction" class="section" aria-labelledby="add-heading" tabindex="-1">
+    function plainText(value) {
+      if (!value) return "";
+      const raw = typeof value === "string" ? value : value.rendered || "";
+      const div = document.createElement("div");
+      div.innerHTML = raw;
+      return div.textContent.trim();
+    }
 
-                <div class="section-inner">
-                    <h2 id="add-heading" class="section-title">Add Transaction</h2>
+    // 5. SHOW THE RESULTS (safely, with textContent) ----------------------
+    function render(items) {
+      resultsEl.replaceChildren();
 
-                    <div role="status" id="form-status" class="form-status" aria-live="polite"></div>
+      items.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "card";
 
-                    <form id="txn-form" class="txn-form" novalidate aria-label="Add or edit a transaction">
+        const imgUrl = pickImage(item);
+        if (imgUrl) {
+          const img = document.createElement("img");
+          img.src = imgUrl;
+          img.alt = plainText(item.title) || "NASA picture";
+          img.loading = "lazy";
+          card.append(img);
+        }
 
-                        <input type="hidden" id="edit-id" />
-                        <div class="field-group">
-                            <label for="f-description">Description <span aria-hidden="true"
-                                    class="required">*</span></label>
-                            <input type="text" id="f-description" name="description" autocomplete="off"
-                                aria-required="true" aria-describedby="err-description" placeholder="e.g. Lunch" />
-                            <span class="field-error" id="err-description" role="alert" aria-live="assertive"></span>
-                        </div>
-                        <div class="field-row">
-                            <div class="field-group">
-                                <label for="f-amount">Amount (RWF) <span aria-hidden="true"
-                                        class="required">*</span></label>
-                                <input type="text" id="f-amount" name="amount" inputmode="decimal" aria-required="true"
-                                    aria-describedby="err-amount" placeholder="e.g. 1500" />
-                                <span class="field-error" id="err-amount" role="alert" aria-live="assertive"></span>
-                            </div>
-                            <div class="field-group">
-                                <label for="f-category">Category <span aria-hidden="true"
-                                        class="required">*</span></label>
-                                <select id="f-category" name="category" aria-required="true"
-                                    aria-describedby="err-category">
-                                    <option value="">— Select —</option>
-                                    <option>Food</option>
-                                    <option>Books</option>
-                                    <option>Transport</option>
-                                    <option>Entertainment</option>
-                                    <option>Fees</option>
-                                    <option>Other</option>
-                                </select>
-                                <span class="field-error" id="err-category" role="alert" aria-live="assertive"></span>
-                            </div>
-                        </div>
-                        <div class="field-group">
-                            <label for="f-data"> <span aria-hidden="true" class="required">*</span></label>
+        const body = document.createElement("div");
+        body.className = "body";
 
-                            <input type="data" id="f-data" aria-required="true aria-describedby=" err-data />
-                            <span class="field-error" id="err-data" role="alert" aria-liver="assertive"></span>
-                        </div>
-                        <div class="from-actions">
+        const title = document.createElement("h2");
+        title.textContent = plainText(item.title) || "Untitled";
 
-                            <button type="submit" class="btn btn--primay" id="from-submit-btn">Add
-                                Transaction</button>
-                            <button type="button" class="btn--ghost" id="form-cancel-btn" hidden>Cancel
-                                Edit</button>
-                        </div>
-                    </form>
-                </div>
-            </section>
-            <!-- ── TRANSACTION RECORDS ── -->
-            <section id="records" class="section" aria-labelledby="records-heading" tabindex="-1">
-                <div class="section-inner">
-                    <h2 id="records-heading" class="section-little">Transaction Recards</h2>
-                    <!--search integrated into records-->
-                    <div class="search-bar">
+        const date = document.createElement("p");
+        date.className = "date";
+        date.textContent = item.date || "";
 
-                        <div class="field-group search-field">
-                            <label for="serach-input">search transactions</label>
-                            <input type="text" id="search-put" placeholder="e.g coffee|tea" autocomplete="off"
-                                aria-desribedby="search-status search-error" />
-                            <span class="field-error" id="search-error" role="alert" aria-live="assertive"></span>
-                        </div>
-                        <label class="toggle-label">
-                            <input type="checkbox" id="search-case" checked />
-                            Case-insensitive
-                        </label>
-                        <button class="btn btn--ghost" id="search-clear">Clear</button>
-                    </div>
-                    <div id="search-status" role="status" aria-live="polite" class="search-status"></div>
-                    <div class="table-toolbar">
+        body.append(title, date);
 
-                        <span id="records-count" class="records-count" aria-live="polite"></span>
-                        <div class="sort-controls" role="group" aria-label="Sort transactions">
-                            <label for="sort-field">Sort by</label>
-                            <select id="sort-field">
-                                <option value="date">Date</option>
-                                <option value="amount">Amount</option>
-                                <option value="description">Description</option>
-                            </select>
-                            <button class="btn btn--icon" id="sort-dir" aria-label="Toggle sort direction"
-                                title="Toggle sort direction">↑</button>
-                        </div>
-                    </div>
-                    <!-- Desktop table -->
-                    <div class="table-wrap" role="region" aria-label="Transactions table" tabindex="0">
-                        <table id="records-table" aria-describedby="records-count">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Description</th>
-                                    <th scope="col">Amount</th>
-                                    <th scope="col">Category</th>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="records-tbody">
-                                <!-- rows injected by ui.js -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Mobile cards -->
-                    <ul id="records-cards" class="record-cards" aria-label="Transaction records">
+        const text = plainText(item.explanation || item.excerpt);
+        if (text) {
+          const p = document.createElement("p");
+          p.textContent = text.length > 220 ? text.slice(0, 220) + "…" : text;
+          body.append(p);
+        }
 
-                        <!-- cards injected by ui.js -->
-                    </ul>
-                    <p id="empty-state" class="empty-state" hidden>No transactions found. Add one above!</p>
-                </div>
-            </section>
-            <!-- ── BUDGET TARGET ── -->
-            <section id="budget-target" class="section section--alt" aria-labelledby="budget-heading" tabindex="-1">
-                <div class="section-inner">
+        const link = item.permalink || item.link;
+        if (link) {
+          const a = document.createElement("a");
+          a.href = link;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.textContent = "Read more";
+          body.append(a);
+        }
 
-                    <h2 id="budget-heading" class="section-title">Budget Target</h2>
-                    <div class="budget-form">
-                        <div class="field-group">
-                            <label for="budget-input">Monthly Budget (RWF)</label>
-                            <input type="text" id="budget-input" inputmode="numeric" placeholder="e.g. 100000"
-                                aria-describedby="budget-live-polite" />
-                        </div>
-                        <button class="btn btn--primary" id="budget-save">Set Budget</button>
-                    </div>
-                    <div class="budget-cards">
-                        <div class="budget-card">
-                            <span class="bcard-label">Budget</span>
-                            <span class="bcard-value" id="b-budget">RWF 0</span>
-                        </div>
+        card.append(body);
+        resultsEl.append(card);
+      });
+    }
 
-                        <div class="budget-bar-wrap" aria-hidden="true">
-                            <div class="budget-bar" id="budget-progress"></div>
-                        </div>
+    // 6. PUT IT TOGETHER ---------------------------------------------------
+    async function load() {
+      statusEl.className = "";
+      statusEl.textContent = "Loading…";
+      resultsEl.replaceChildren();
 
-                        <div id="budget-live-polite" role="status" aria-live="polite" class="budget-msg" <div
-                            id="budget-live-assertive" role="alert" aria-live="assertive" class="budget-msg"
-                            aria-atomic="true" hidden>
-                        </div>id="budget-error" role="alert" aria-live="assertive" class="field-error">
-                    </div>
-                </div>
-            </section>
+      try {
+        const data = await getData(buildUrl());
+        console.log("API response:", data);
+        const items = Array.isArray(data) ? data : [data];
+        render(items);
+        statusEl.textContent = `Showing ${items.length} item${items.length === 1 ? "" : "s"}.`;
+      } catch (err) {
+        statusEl.className = "error";
+        statusEl.textContent = err.message || "Something went wrong.";
+      }
+    }
 
-            <!-- ── SETTINGS ── -->
-            <section id="settings" class="section" aria-labelledby="settings-heading" tabindex="-1">
-                <div class="section-inner">
-                    <h2 id="settings-heading" class="section-title">Settings</h2>
+    // Show or hide inputs depending on the mode
+    $("mode").addEventListener("change", () => {
+      const mode = $("mode").value;
+      $("date").hidden = mode !== "date";
+      $("count").hidden = mode !== "random";
+      $("start").hidden = mode !== "range";
+      $("end").hidden = mode !== "range";
+    });
 
-                    <!-- Currency -->
-                    <div class="settings-block">
-                        <h3>Currency</h3>
-
-                        <!-- Display currency switcher -->
-                        <div class="display-currency">
-                            <label class="display-currency-label">Display Currency</label>
-                            <div class="currency-toggle" role="group" aria-label="Select display currency">
-                                <button class="btn btn--ghost currency-btn active" data-cur="rwf">RWF</button>
-                                <button class="btn btn--ghost currency-btn" data-cur="usd">USD</button>
-                                <button class="btn btn--ghost currency-btn" data-cur="eur">EUR</button>
-                            </div>
-                        </div>
-
-                        <p class="settings-note">Base currency is RWF. Set manual conversion rates below.</p>
-                        <div class="field-row">
-                            <div class="field-group">
-                                <label for="rate-usd">1 USD = RWF</label>
-                                <input type="text" id="rate-usd" inputmode="decimal" placeholder="e.g. 1320" />
-                            </div>
-                            <div class="field-group">
-                                <label for="rate-eur">1 EUR = RWF</label>
-                                <input type="text" id="rate-eur" inputmode="decimal" placeholder="e.g. 1430" />
-                            </div>
-                        </div>
-                        <button class="btn btn--primary" id="rates-save">Save Rates</button>
-                        <div id="rates-status" role="status" aria-live="polite" class="settings-status"></div>
-
-                        <div class="converter">
-                            <h4>Quick Convert</h4>
-                            <div class="field-row">
-                                <div class="field-group">
-                                    <label for="conv-amount">Amount (RWF)</label>
-                                    <input type="text" id="conv-amount" inputmode="decimal" placeholder="1000" />
-                                </div>
-                                <div class="field-group">
-                                    <label for="conv-to">To</label>
-                                    <select id="conv-to">
-                                        <option value="usd">USD</option>
-                                        <option value="eur">EUR</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button class="btn btn--ghost" id="conv-btn">Convert</button>
-                            <p id="conv-result" class="conv-result" aria-live="polite"></p>
-                        </div>
-
-                    </div>
-                    <!-- Categories -->
-                    <div class="settings-block">
-                        <h3>Categories</h3>
-                        <ul id="cat-list" class="cat-manage-list" aria-label="Manage categories"></ul>
-                        <div class="field-row cat-add-row">
-                            <div class="field-group">
-                                <label for="new-cat">New category</label>
-                                <input type="text" id="new-cat" placeholder="e.g. Health"
-                                    aria-describedby="err-new-cat" />
-                                <span class="field-error" id="err-new-cat" role="alert" aria-live="assertive"></span>
-                            </div>
-                            <button class="btn btn--primary" id="add-cat-btn">Add</button>
-                        </div>
-                    </div>
-                    <!-- Data Management -->
-                    <div class="settings-block">
-                        <h3>Data Management</h3>
-                        <input type="file" id="import-input" accept=".json" class="sr-only"
-                            aria-label="Import JSON file" />
-                        <div class="data-btns">
-                            <button class="btn btn--primary" id="export-btn">Export JSON</button>
-                            <label class="btn btn--ghost" id="import-label" for="import-input">Import JSON</label>
-                            <button class="btn btn--danger" id="clear-btn">Clear All Data</button>
-                        </div>
-                        <div id="data-status" role="status" aria-live="polite" class="settings-status">
-                        </div>
-                    </div>
-            </section>
-
-        </main>
-
-        <!-- FOOTER -->
-        <footer class="site-footer" role="contentinfo">
-            <div class="footer-inner">
-                <p class="footer-name"></p>aalier1-dot</p>
-                <p><a href="mailto:a.alier1@alustudent.com">a.alier1>@alustudent.com</a></p>
-                <p><a href="https://github.com/aalier1-dot" target="_blank" rel="noopener">github.com/aalier1-dot</a>
-                </p>
-                <p class="footer-copy"> & copy; <span id="footer-year"></span> Student Finance Tracker</p>
-            </div>
-        </footer>
-
-        <!-- Delete confirmation dialog -->
-        <div id="confirm-dialog" class="dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="dialog-title"
-            hidden>
-            <div class="dialog-box">
-                <h2 id="dialog-title">Delete Transaction?</h2>
-                <p id="dialog-desc">This action cannot be undone.</p>
-                <div class="dialog-actions">
-                    <button class="btn btn--danger" id="dialog-confirm">Delete</button>
-                    <button class="btn btn--ghost" id="dialog-cancel">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-        <script type="module" src="scripts/app.js"></script>
-
-    </body>
-
-    </html>
+    $("load").addEventListener("click", load);
+    load(); // load today's picture on page open
+  </script>
+</body>
+</html>
